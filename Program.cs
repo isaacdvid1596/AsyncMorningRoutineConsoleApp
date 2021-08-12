@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -46,22 +47,55 @@ namespace ConsoleApp1
             /*storing tasks inside of vars*/
             var eggsTask = FryEggs(2);
             var baconTask = FryBacon(2);
-            var toastsTask = ToastBread(2);
+            var toastTask = MakeToasts(2);
 
-            var toasts = await toastsTask;
-            ApplyButter(toasts);
-            ApplyJam(toasts);
-            Console.WriteLine("Toasts ready!");
+            var tasks = new List<Task> {eggsTask,baconTask,toastTask};
 
-            var eggs = await eggsTask;
-            Console.WriteLine("huevos listos");
+            while (tasks.Count > 0)
+            {
+                var task = await Task.WhenAny(tasks);
 
-            var bacon = await baconTask;
-            Console.WriteLine("Bacon ready!");
+                if (task == eggsTask)
+                {
+                    Console.WriteLine("Huevos listos");
+                }
+                else if (task == baconTask)
+                {
+                    Console.WriteLine("Bacon ready!");
+                }
+                else if (task == toastTask)
+                {
+                    Console.WriteLine("Toasts ready!");
+                }
 
-           
+                tasks.Remove(task);
+            }
+
+            await Task.WhenAll(eggsTask, baconTask, toastTask);
+            //await toastTask;
+
+            //var toasts = await toastsTask;
+            //ApplyButter(toasts);
+            //ApplyJam(toasts);
+            //Console.WriteLine("Toasts ready!");
+
+            //var eggs = await eggsTask;
+
+            //var bacon = await baconTask;
+
+
+
             stopwatch.Stop();
             Console.WriteLine($"Time elapsed {stopwatch.ElapsedMilliseconds}");
+        }
+
+        private static async Task<Toast> MakeToasts(int t)
+        {
+            var toasts = await ToastBread(2);
+
+            ApplyButter(toasts);
+            ApplyJam(toasts);
+            return toasts;
         }
 
         /*no esperan asi que dejar void*/
@@ -101,7 +135,7 @@ namespace ConsoleApp1
         {
             Console.WriteLine("Heating fryer");
             await Task.Delay(300);
-            Console.WriteLine($"breaking {e} eggs"); 
+            Console.WriteLine($"breaking {e} eggs");
             Console.WriteLine($"cooking the eggs");
             await Task.Delay(300);
             Console.WriteLine("Placing it on dish");
